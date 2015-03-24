@@ -1,0 +1,21 @@
+{
+  "name": "libbeacon",
+  "version": "0.1.0",
+  "description": "Library for interacting with beacon",
+  "main": "./lib/main.js",
+  "scripts": {
+    "test": "mocha --reporter list"
+  },
+  "author": "Sam Dunster",
+  "license": "MIT",
+  "repository": "sdunster/libbeacon",
+  "dependencies": {
+    "htmlparser2": "~3.7.3",
+    "request": "~2.40.0",
+    "tough-cookie": "~0.12.1",
+    "underscore": "^1.7.0"
+  },
+  "devDependencies": {
+    "mocha": "~2.2.1"
+  }
+}
