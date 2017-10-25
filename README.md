@@ -8,18 +8,18 @@ $ npm install libbeacon
 
 ## Example
 ```js
-var beacon = new Libbeacon();
-beacon.login('username', 'password', function(err, success) {
-    beacon.get('Jobs/1', {}, function(error, data) {
-        console.log(data);
-    }
+const libbeacon = require('libbeacon')(client_id, client_secret, 'preview');
+libbeacon.login('username', 'password').then((api) => {
+  api.get('Messages/')
+}, (error) => {
+  // fail
 });
 ```
 
 ## Tests
 ```bash
 $ npm install
-$ BEACON_USERNAME='user' BEACON_PASSWORD='pass' npm test
+$ IDENTITY_CLIENT_ID='' IDENTITY_CLIENT_SECRET='' BEACON_USERNAME='user' BEACON_PASSWORD='pass' npm test
 ```
 
 ## License
