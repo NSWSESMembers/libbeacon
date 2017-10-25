@@ -1,74 +1,70 @@
-var assert = require("assert")
-var Libbeacon = require("../lib/main")
+const assert = require("assert");
+const Client = require("../lib/client.js");
+const api_factory = require("../lib/main.js");
 
-var credentials = {
-  username: process.env.BEACON_USERNAME,
-  password: process.env.BEACON_PASSWORD
-}
-
-var setupAndLogin = function(cb) {
-  if(!credentials.username || !credentials.password) {
-    console.log("Must set BEACON_USERNAME and BEACON_PASSWORD");
+var setup = function() {
+  if(!process.env.BEACON_CLIENT_ID || !process.env.BEACON_CLIENT_SECRET) {
+    assert.fail("Must set BEACON_CLIENT_ID and BEACON_CLIENT_SECRET");
   }
-  var beacon = new Libbeacon();
-  beacon.login(
-    credentials.username,
-    credentials.password,
-    function(error, success) {
-      assert.ifError(error);
-      assert.equal(success, true);
-      cb(beacon);
-    }
+
+  const env = "BEACON_ENV" in process.env ? process.env.BEACON_ENV : 'prod'
+
+  return api_factory(
+    process.env.BEACON_CLIENT_ID,
+    process.env.BEACON_CLIENT_SECRET,
+    env,
   );
 }
 
-describe('Libbeacon', function() {
-  describe('login()', function() {
-    this.timeout(5000); // login is slow :(
-    it('should succeed but return false with invalid credentials', function(done) {
-      var beacon = new Libbeacon();
-      beacon.login('test','test', function(error, success) {
-        assert.ifError(error);
-        assert.equal(success, false);
-        done();
+var setupAndLogin = function() {
+  const api = setup();
+
+  if(!process.env.BEACON_USERNAME || !process.env.BEACON_PASSWORD) {
+    assert.fail("Must set BEACON_USERNAME and BEACON_PASSWORD");
+  }
+
+  return api.login(
+    process.env.BEACON_USERNAME,
+    process.env.BEACON_PASSWORD,
+  );
+}
+
+describe('login()', function() {
+  this.timeout(5000); // login is slow :(
+  it('should raise an error', function() {
+    const api = setup();
+    return new Promise((resolve) => {
+      api.login('test', 'test')
+      .then((client) => {
+        assert.fail("Did not fail with incorrect credentials");
+      })
+      .catch((error) => {
+        resolve();
       });
     });
+  });
 
-    it('should fail and throw an error', function(done) {
-      var beacon = new Libbeacon();
-      beacon.baseUrl = 'http://google.com';
-      beacon.login('test','test', function(error, success) {
-        assert(error);
-        done();
-      });
+  it('should login successfully', function() {
+    const api = setup();
+    return api.login(
+      process.env.BEACON_USERNAME,
+      process.env.BEACON_PASSWORD)
+    .then((client) => {
+      assert(client instanceof Client);
     });
+  });
+});
 
-    it('should login successfully', function(done) {
-      if(!credentials.username || !credentials.password) {
-        console.log("Must set BEACON_USERNAME and BEACON_PASSWORD");
-      }
-      var beacon = new Libbeacon();
-      beacon.login(
-        credentials.username,
-        credentials.password,
-        function(error, success) {
-          assert.ifError(error);
-          assert.equal(success, true);
-          done();
-        }
-      );
+describe('Client', function() {
+  var beacon;
+  before(function() {
+    return setupAndLogin()
+    .then((result) => {
+      beacon = result;
     });
   });
 
   describe('get()', function() {
-    var beacon;
-    before(function(done) {
-      setupAndLogin(function(result) {
-        beacon = result;
-        done();
-      });
-    });
-
     it('should fetch a job', function(done) {
       beacon.get('Jobs/1', {}, function(error, data) {
         assert.ifError(error);
@@ -91,17 +87,9 @@ describe('Libbeacon', function() {
   describe('getPagedResults()', function() {
     this.timeout(10000);
 
-    var beacon;
-    before(function(done) {
-      setupAndLogin(function(result) {
-        beacon = result;
-        done();
-      });
-    });
-
     it('should fetch some locations', function(done) {
       var locations = [];
-      
+
       beacon.getPagedResults('Entities', {qs: {"Q": ""}}, function(error, finished, data) {
         assert.ifError(error);
         locations = locations.concat(data);
