@@ -3,16 +3,16 @@ const Client = require("../lib/client.js");
 const api_factory = require("../lib/main.js");
 
 var setup = function() {
-  if(!process.env.BEACON_CLIENT_ID || !process.env.BEACON_CLIENT_SECRET) {
-    assert.fail("Must set BEACON_CLIENT_ID and BEACON_CLIENT_SECRET");
+  if(!process.env.IDENTITY_CLIENT_ID || !process.env.IDENTITY_CLIENT_SECRET) {
+    assert.fail("Must set IDENTITY_CLIENT_ID and IDENTITY_CLIENT_SECRET");
   }
 
   const env = "BEACON_ENV" in process.env ? process.env.BEACON_ENV : 'prod'
 
   return api_factory(
-    process.env.BEACON_CLIENT_ID,
-    process.env.BEACON_CLIENT_SECRET,
-    env,
+    process.env.IDENTITY_CLIENT_ID,
+    process.env.IDENTITY_CLIENT_SECRET,
+    env
   );
 }
 
@@ -25,7 +25,7 @@ var setupAndLogin = function() {
 
   return api.login(
     process.env.BEACON_USERNAME,
-    process.env.BEACON_PASSWORD,
+    process.env.BEACON_PASSWORD
   );
 }
 
@@ -65,48 +65,54 @@ describe('Client', function() {
   });
 
   describe('get()', function() {
-    it('should fetch a job', function(done) {
-      beacon.get('Jobs/1', {}, function(error, data) {
+    it('should fetch a job', function() {
+      beacon.get('Jobs/1', {}).then((error, data) => {
         assert.ifError(error);
         assert('Id' in data);
         assert('Identifier' in data);
-        done();
+      })
+      .catch((error) => {
+        resolve();
       });
     });
 
-    it('should fetch a job and override a header', function(done) {
-      beacon.get('Jobs/1', {headers: {"X-Test": 1}}, function(error, data) {
+    it('should fetch a job and override a header', function() {
+      beacon.get('Jobs/1', {headers: {"X-Test": 1}}).then((error, data) => {
         assert.ifError(error);
         assert('Id' in data);
         assert('Identifier' in data);
-        done();
+      })
+      .catch((error) => {
+        resolve();
       });
     });
+
   });
 
   describe('getPagedResults()', function() {
     this.timeout(10000);
 
-    it('should fetch some locations', function(done) {
+    it('should fetch some locations', function() {
       var locations = [];
 
-      beacon.getPagedResults('Entities', {qs: {"Q": ""}}, function(error, finished, data) {
+      beacon.getPagedResults('Headquarters/Search', {qs: {"PageSize": "5"}}).then((error, data) => {
         assert.ifError(error);
-        locations = locations.concat(data);
-        if(finished) {
-          // make sure we get more than one page (50)
-          assert(Array.isArray(locations));
-          assert(locations.length > 60);
-          done();
-        }
+          // make sure we get more than one page (5)
+          assert(Array.isArray(data));
+          assert(data.length > 10);
+        })
+        .catch((error) => {
+          resolve();
+        });
       });
-    });
 
-    it('should fail requesting non-page API', function(done) {
-      beacon.getPagedResults('Jobs/1', {}, function(error, finished, data) {
+    it('should fail requesting non-page API', function() {
+      beacon.getPagedResults('Jobs/1', {}).then((error, data) => {
         assert(error);
         assert(!finished);
-        done();
+      })
+      .catch((error) => {
+        resolve();
       });
     });
   });
