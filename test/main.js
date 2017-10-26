@@ -66,24 +66,18 @@ describe('Client', function() {
 
   describe('get()', function() {
     it('should fetch a job', function() {
-      beacon.get('Jobs/1', {}).then((error, data) => {
+      return beacon.get('Jobs/1', {}).then((error, data) => {
         assert.ifError(error);
         assert('Id' in data);
         assert('Identifier' in data);
-      })
-      .catch((error) => {
-        resolve();
       });
     });
 
     it('should fetch a job and override a header', function() {
-      beacon.get('Jobs/1', {headers: {"X-Test": 1}}).then((error, data) => {
+      return beacon.get('Jobs/1', {headers: {"X-Test": 1}}).then((error, data) => {
         assert.ifError(error);
         assert('Id' in data);
         assert('Identifier' in data);
-      })
-      .catch((error) => {
-        resolve();
       });
     });
 
@@ -95,24 +89,18 @@ describe('Client', function() {
     it('should fetch some locations', function() {
       var locations = [];
 
-      beacon.getPagedResults('Headquarters/Search', {qs: {"PageSize": "5"}}).then((error, data) => {
+      return beacon.getPagedResults('Headquarters/Search', {qs: {"PageSize": "5"}}).then((error, data) => {
         assert.ifError(error);
           // make sure we get more than one page (5)
           assert(Array.isArray(data));
           assert(data.length > 10);
-        })
-        .catch((error) => {
-          resolve();
         });
       });
 
     it('should fail requesting non-page API', function() {
-      beacon.getPagedResults('Jobs/1', {}).then((error, data) => {
+      return beacon.getPagedResults('Jobs/1', {}).then((error, data) => {
         assert(error);
         assert(!finished);
-      })
-      .catch((error) => {
-        resolve();
       });
     });
   });
