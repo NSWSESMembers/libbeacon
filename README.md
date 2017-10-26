@@ -20,7 +20,7 @@ libbeacon.login('username', 'password').then((api) => {
 ## Tests
 ```bash
 $ npm install
-$ BEACON_CLIENT_ID='' BEACON_CLIENT_SECRET='' BEACON_USERNAME='user' BEACON_PASSWORD='pass' npm test
+$ IDENTITY_CLIENT_ID='' IDENTITY_CLIENT_SECRET='' BEACON_USERNAME='user' BEACON_PASSWORD='pass' npm test
 ```
 
 ## License
